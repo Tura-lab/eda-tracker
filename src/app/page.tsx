@@ -26,6 +26,12 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
+  // Function to refresh both balances and transactions
+  const refreshData = () => {
+    fetchBalances() // Refresh the balances
+    setRefreshTrigger(prev => prev + 1) // Trigger transaction history refresh
+  }
+
   useEffect(() => {
     if (status === "authenticated" && !session.user?.name) {
       router.push("/welcome")
@@ -60,8 +66,7 @@ export default function Home() {
   }
 
   const handleModalSuccess = () => {
-    fetchBalances() // Refresh the balances after adding a new transaction
-    setRefreshTrigger(prev => prev + 1) // Trigger transaction history refresh
+    refreshData() // Refresh both balances and transactions after adding a new transaction
   }
 
   if (status === "loading") {
@@ -73,7 +78,7 @@ export default function Home() {
   }
 
   if (session) {
-    return (
+  return (
       <div className="min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
@@ -84,13 +89,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base cursor-pointer"
               >
                 Add Transaction
               </button>
               <button
                 onClick={() => signOut()}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm sm:text-base"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm sm:text-base cursor-pointer"
               >
                 Sign out
               </button>
@@ -119,7 +124,7 @@ export default function Home() {
                           <p className="text-xs sm:text-sm text-gray-600 break-all">{balance.other_user_email}</p>
                         </div>
                         <p className="text-green-600 font-bold text-lg sm:text-base self-start sm:self-center">
-                          +${Math.abs(balance.net_balance).toFixed(2)}
+                          +{Math.abs(balance.net_balance).toFixed(2)} ETB
                         </p>
                       </div>
                     ))}
@@ -143,7 +148,7 @@ export default function Home() {
                           <p className="text-xs sm:text-sm text-gray-600 break-all">{balance.other_user_email}</p>
                         </div>
                         <p className="text-red-600 font-bold text-lg sm:text-base self-start sm:self-center">
-                          -${Math.abs(balance.net_balance).toFixed(2)}
+                          -{Math.abs(balance.net_balance).toFixed(2)} ETB
                         </p>
                       </div>
                     ))}
@@ -156,7 +161,10 @@ export default function Home() {
 
           {/* Transaction History */}
           <div className="mt-6 sm:mt-8">
-            <TransactionHistory refreshTrigger={refreshTrigger} />
+            <TransactionHistory 
+              refreshTrigger={refreshTrigger} 
+              onTransactionChange={refreshData}
+            />
           </div>
         </div>
 
@@ -175,7 +183,7 @@ export default function Home() {
       <p>Not signed in</p>
       <button
         onClick={() => signIn("google")}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
       >
         Sign in with Google
       </button>

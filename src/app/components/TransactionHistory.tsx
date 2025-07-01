@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import EditTransactionModal from "./EditTransactionModal"
+import ConfirmationModal from "./ConfirmationModal"
+import Toast from "./Toast"
 
 interface Transaction {
   id: string
@@ -8,6 +11,7 @@ interface Transaction {
   description: string
   created_at: string
   type: 'lent' | 'borrowed'
+  can_edit: boolean
   other_person: {
     name: string
     email: string
@@ -16,9 +20,10 @@ interface Transaction {
 
 interface TransactionHistoryProps {
   refreshTrigger: number // Used to refresh when new transactions are added
+  onTransactionChange?: () => void // Callback to refresh balances when transactions change
 }
 
-export default function TransactionHistory({ refreshTrigger }: TransactionHistoryProps) {
+export default function TransactionHistory({ refreshTrigger, onTransactionChange }: TransactionHistoryProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
   const [paginatedTransactions, setPaginatedTransactions] = useState<Transaction[]>([])
@@ -30,6 +35,16 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
+    isOpen: false,
+    type: 'error',
+    title: "",
+    message: ""
+  })
 
   useEffect(() => {
     fetchTransactions()
@@ -133,6 +148,62 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
     }
   }
 
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction)
+    setIsEditModalOpen(true)
+  }
+
+  const handleDelete = (transaction: Transaction) => {
+    setDeletingTransaction(transaction)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingTransaction) return
+
+    try {
+      const response = await fetch(`/api/transactions/${deletingTransaction.id}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        fetchTransactions() // Refresh the list
+        onTransactionChange?.() // Refresh balances
+        setIsDeleteModalOpen(false)
+        setDeletingTransaction(null)
+        setToast({
+          isOpen: true,
+          type: 'success',
+          title: "Success!",
+          message: "Transaction deleted successfully."
+        })
+      } else {
+        const errorText = await response.text()
+        setToast({
+          isOpen: true,
+          type: 'error',
+          title: "Delete Failed",
+          message: `Failed to delete transaction: ${errorText}`
+        })
+      }
+    } catch (error) {
+      console.error("Delete error:", error)
+      setToast({
+        isOpen: true,
+        type: 'error',
+        title: "Error",
+        message: "An error occurred while deleting the transaction."
+      })
+    }
+  }
+
+  const handleEditSuccess = () => {
+    fetchTransactions() // Refresh the list
+    onTransactionChange?.() // Refresh balances
+    setIsEditModalOpen(false)
+    setEditingTransaction(null)
+  }
+
   if (loading) {
     return (
       <div className="bg-gray-50 p-6 rounded-lg border">
@@ -169,7 +240,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
               <button
                 type="button"
                 onClick={clearPersonSelection}
-                className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 cursor-pointer"
               >
                 ×
               </button>
@@ -184,7 +255,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
                   key={`${person.email}-${index}`}
                   type="button"
                   onClick={() => selectPerson(person)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none cursor-pointer"
                 >
                   <div className="font-medium text-black">{person.name}</div>
                   <div className="text-sm text-gray-600">{person.email}</div>
@@ -198,7 +269,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
               filter === 'all' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -208,7 +279,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
           </button>
           <button
             onClick={() => setFilter('lent')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
               filter === 'lent' 
                 ? 'bg-green-500 text-white' 
                 : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -218,7 +289,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
           </button>
           <button
             onClick={() => setFilter('borrowed')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
               filter === 'borrowed' 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white text-gray-600 hover:bg-gray-100'
@@ -242,30 +313,56 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
           </div>
 
           <div className="space-y-3">
-            {paginatedTransactions.map((transaction) => (
-            <div key={transaction.id} className="bg-white p-3 sm:p-4 rounded border">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className={`inline-block w-2 h-2 rounded-full ${
-                      transaction.type === 'lent' ? 'bg-green-500' : 'bg-red-500'
-                    }`}></span>
-                    <span className="font-medium text-sm sm:text-base">
-                      {transaction.type === 'lent' ? 'Lent to' : 'Borrowed from'} {transaction.other_person.name}
-                    </span>
+                        {paginatedTransactions.map((transaction) => (
+              <div key={transaction.id} className="bg-white p-3 sm:p-4 rounded border">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className={`inline-block w-2 h-2 rounded-full ${
+                          transaction.type === 'lent' ? 'bg-green-500' : 'bg-red-500'
+                        }`}></span>
+                        <span className="font-medium text-sm sm:text-base">
+                          {transaction.type === 'lent' ? 'Lent to' : 'Borrowed from'} {transaction.other_person.name}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-xs sm:text-sm mb-1">{transaction.description}</p>
+                      <p className="text-xs text-gray-500">{formatDate(transaction.created_at)}</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className={`font-bold text-lg sm:text-base ${
+                        transaction.type === 'lent' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'lent' ? '+' : '-'}{transaction.amount.toFixed(2)} ETB
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-gray-600 text-xs sm:text-sm mb-1">{transaction.description}</p>
-                  <p className="text-xs text-gray-500">{formatDate(transaction.created_at)}</p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className={`font-bold text-lg sm:text-base ${
-                    transaction.type === 'lent' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'lent' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                  </p>
+                  
+                  {/* Edit/Delete buttons - only show if user can edit */}
+                  {transaction.can_edit && (
+                    <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                      <button
+                        onClick={() => handleEdit(transaction)}
+                        className="p-2 text-blue-500 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        title="Edit transaction"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(transaction)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer"
+                        title="Delete transaction"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-                          </div>
             ))}
           </div>
 
@@ -275,7 +372,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
               <button
                 onClick={goToPrevious}
                 disabled={currentPage === 1}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 cursor-pointer"
               >
                 Previous
               </button>
@@ -299,7 +396,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`px-3 py-1 rounded text-sm ${
+                      className={`px-3 py-1 rounded text-sm cursor-pointer ${
                         currentPage === page
                           ? 'bg-blue-500 text-white'
                           : 'border hover:bg-gray-100'
@@ -314,7 +411,7 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
               <button
                 onClick={goToNext}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 cursor-pointer"
               >
                 Next
               </button>
@@ -331,6 +428,41 @@ export default function TransactionHistory({ refreshTrigger }: TransactionHistor
           }
         </div>
       )}
+      
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={isEditModalOpen}
+        transaction={editingTransaction}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingTransaction(null)
+        }}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Transaction"
+        message={`Are you sure you want to delete this transaction: "${deletingTransaction?.description}"?`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDestructive={true}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setIsDeleteModalOpen(false)
+          setDeletingTransaction(null)
+        }}
+      />
+
+      {/* Toast */}
+      <Toast
+        isOpen={toast.isOpen}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+        onClose={() => setToast({isOpen: false, type: 'error', title: "", message: ""})}
+      />
     </div>
   )
 } 

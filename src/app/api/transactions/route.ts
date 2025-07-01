@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/app/auth"
 import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
@@ -71,6 +71,7 @@ export async function GET() {
       description: transaction.description,
       created_at: transaction.created_at,
       type: isLending ? 'lent' : 'borrowed',
+      can_edit: transaction.payer_id === session.user.id, // Only payer can edit
       other_person: {
         name: otherPerson?.name || 'Unknown',
         email: otherPerson?.email || 'Unknown'

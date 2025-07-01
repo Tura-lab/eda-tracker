@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Toast from "./Toast"
 
 interface User {
   id: string
@@ -16,13 +17,19 @@ interface AddExpenseModalProps {
 
 export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalProps) {
   const [amount, setAmount] = useState("")
-  const [type, setType] = useState<"lend" | "borrow">("lend")
+  const [type] = useState<"lend" | "borrow">("lend") // Always lending since borrowers don't add transactions
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [searchResults, setSearchResults] = useState<User[]>([])
   const [description, setDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
+    isOpen: false,
+    type: 'error',
+    title: "",
+    message: ""
+  })
 
   // Search for users
   useEffect(() => {
@@ -52,7 +59,12 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
     e.preventDefault()
     
     if (!selectedUser || !amount || !description) {
-      alert("Please fill in all fields")
+      setToast({
+        isOpen: true,
+        type: 'error',
+        title: "Missing Information",
+        message: "Please fill in all fields"
+      })
       return
     }
 
@@ -75,18 +87,36 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
       if (response.ok) {
         // Reset form
         setAmount("")
-        setType("lend")
         setSearchQuery("")
         setSelectedUser(null)
         setDescription("")
+        setToast({
+          isOpen: true,
+          type: 'success',
+          title: "Success!",
+          message: "Transaction added successfully."
+        })
         onSuccess()
-        onClose()
+        // Small delay to let user see the success toast
+        setTimeout(() => {
+          onClose()
+        }, 1500)
       } else {
-        alert("Failed to add expense. Please try again.")
+        setToast({
+          isOpen: true,
+          type: 'error',
+          title: "Failed to Add Transaction",
+          message: "Failed to add expense. Please try again."
+        })
       }
     } catch (error) {
       console.error("Submit error:", error)
-      alert("An error occurred. Please try again.")
+      setToast({
+        isOpen: true,
+        type: 'error',
+        title: "Error",
+        message: "An error occurred. Please try again."
+      })
     } finally {
       setIsLoading(false)
     }
@@ -112,7 +142,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
           <h2 className="text-lg sm:text-xl font-bold">Add Transaction</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl"
+            className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl cursor-pointer"
           >
             ×
           </button>
@@ -122,7 +152,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
           {/* Amount */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Amount ($)
+              Amount (ETB)
             </label>
             <input
               type="number"
@@ -136,39 +166,10 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             />
           </div>
 
-          {/* Lend/Borrow */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Transaction Type
-            </label>
-            <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="lend"
-                  checked={type === "lend"}
-                  onChange={(e) => setType(e.target.value as "lend" | "borrow")}
-                  className="mr-2"
-                />
-                <span className="text-sm sm:text-base">I lent money</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="borrow"
-                  checked={type === "borrow"}
-                  onChange={(e) => setType(e.target.value as "lend" | "borrow")}
-                  className="mr-2"
-                />
-                <span className="text-sm sm:text-base">I borrowed money</span>
-              </label>
-            </div>
-          </div>
-
           {/* Person Search */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {type === "lend" ? "Who do you lent money to?" : "Who did you borrow from?"}
+              Who did you lend money to?
             </label>
             <div className="relative">
               <input
@@ -188,7 +189,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                 <button
                   type="button"
                   onClick={clearUserSelection}
-                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
                   ×
                 </button>
@@ -203,7 +204,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                     key={user.id}
                     type="button"
                     onClick={() => selectUser(user)}
-                    className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none cursor-pointer"
                   >
                     <div className="font-medium text-black">{user.name}</div>
                     <div className="text-sm text-gray-600">{user.email}</div>
@@ -239,20 +240,29 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || !selectedUser}
-              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
+              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 cursor-pointer"
             >
               {isLoading ? "Adding..." : "Add Transaction"}
             </button>
           </div>
         </form>
       </div>
+      
+      {/* Toast */}
+      <Toast
+        isOpen={toast.isOpen}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+        onClose={() => setToast({isOpen: false, type: 'error', title: "", message: ""})}
+      />
     </div>
   )
 } 
