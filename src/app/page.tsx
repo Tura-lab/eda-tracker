@@ -149,7 +149,7 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm sm:text-base">You don't owe anyone money right now.</p>
+                  <p className="text-gray-500 text-sm sm:text-base">You don&apos;t owe anyone money right now.</p>
                 )}
               </div>
             </div>
