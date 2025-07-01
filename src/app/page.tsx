@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import AddExpenseModal from "./components/AddExpenseModal"
 import TransactionHistory from "./components/TransactionHistory"
+import Logo from "./components/Logo"
 
 interface Balance {
   other_user_id: string
@@ -82,9 +83,12 @@ export default function Home() {
       <div className="min-h-screen p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Welcome, {session.user?.name}!</h1>
-              <p className="text-gray-600 text-sm sm:text-base">{session.user?.email}</p>
+            <div className="flex items-center space-x-4">
+              <Logo size={48} />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold">Welcome, {session.user?.name}!</h1>
+                <p className="text-gray-600 text-sm sm:text-base">{session.user?.email}</p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
@@ -180,11 +184,17 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <p>Not signed in</p>
+      <div className="mb-8">
+        <Logo size={64} />
+      </div>
+      <h1 className="text-2xl font-bold mb-4">Welcome to እዳ Tracker</h1>
+      <p className="text-gray-600 mb-8 text-center max-w-md">
+        Track money you&apos;ve lent to friends and family. Simple, secure, and easy-to-use.
+      </p>
       <button
         onClick={() => signIn("google")}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
-      >
+        className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer font-medium"
+        >
         Sign in with Google
       </button>
     </div>

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Logo from "../components/Logo"
 
 export default function WelcomePage() {
   const { data: session, update } = useSession()
@@ -38,8 +39,11 @@ export default function WelcomePage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl mb-4">Welcome!</h1>
-      <p className="mb-8">Please enter your name to complete your profile.</p>
+      <div className="mb-8">
+        <Logo size={64} />
+      </div>
+      <h1 className="text-2xl mb-4">Welcome to እዳ Tracker!</h1>
+      <p className="mb-8 text-center max-w-md">Please enter your name to complete your profile and start tracking your lending transactions.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
@@ -52,7 +56,7 @@ export default function WelcomePage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400 cursor-pointer"
         >
           {isLoading ? "Saving..." : "Save"}
         </button>
