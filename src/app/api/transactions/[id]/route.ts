@@ -3,8 +3,9 @@ import { authOptions } from "@/app/auth"
 import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
+  const { id } = await params
 
   if (!session?.user?.id) {
     return new Response("Unauthorized", { status: 401 })
@@ -29,7 +30,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const { data: existingTransaction, error: fetchError } = await supabase
     .from("expenses")
     .select("payer_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single()
 
   if (fetchError || !existingTransaction) {
@@ -48,7 +49,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       description,
       updated_at: new Date().toISOString()
     })
-    .eq("id", params.id)
+    .eq("id", id)
     .select()
 
   if (error) {
@@ -59,8 +60,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(data)
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
+  const { id } = await params
 
   if (!session?.user?.id) {
     return new Response("Unauthorized", { status: 401 })
@@ -75,7 +77,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const { data: existingTransaction, error: fetchError } = await supabase
     .from("expenses")
     .select("payer_id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single()
 
   if (fetchError || !existingTransaction) {
@@ -90,7 +92,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const { error } = await supabase
     .from("expenses")
     .delete()
-    .eq("id", params.id)
+    .eq("id", id)
 
   if (error) {
     console.error("Supabase delete error:", error)
