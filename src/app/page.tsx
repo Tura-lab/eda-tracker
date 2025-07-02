@@ -54,6 +54,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json()
         setBalances(data)
+        setRefreshTrigger(prev => prev + 1)
       } else {
         console.error("Failed to fetch balances")
       }
