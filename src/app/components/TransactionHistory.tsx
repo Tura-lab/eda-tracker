@@ -34,7 +34,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
   const [showDropdown, setShowDropdown] = useState(false)
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(10)
+  const [itemsPerPage] = useState(5)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null)
@@ -206,17 +206,17 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
 
   if (loading) {
     return (
-      <div className="bg-gray-50 p-6 rounded-lg border">
-        <h2 className="text-xl font-semibold mb-4">Transaction History</h2>
-        <div className="text-center text-gray-500">Loading transactions...</div>
+      <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Transaction History</h2>
+        <div className="text-center text-gray-500 dark:text-gray-400">Loading transactions...</div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border">
+    <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-gray-200 dark:border-gray-700">
       <div className="mb-4">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4">Transaction History</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Transaction History</h2>
         
         {/* Search by name */}
         <div className="mb-4 relative">
@@ -234,13 +234,16 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
               }}
               onFocus={() => setShowDropdown(nameFilter.length > 0 && !selectedPerson)}
               onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                         placeholder-gray-500 dark:placeholder-gray-400"
             />
             {selectedPerson && (
               <button
                 type="button"
                 onClick={clearPersonSelection}
-                className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
               >
                 ×
               </button>
@@ -249,16 +252,16 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
 
           {/* Dropdown */}
           {showDropdown && getFilteredPeople().length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
               {getFilteredPeople().map((person, index) => (
                 <button
                   key={`${person.email}-${index}`}
                   type="button"
                   onClick={() => selectPerson(person)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none cursor-pointer"
                 >
-                  <div className="font-medium text-black">{person.name}</div>
-                  <div className="text-sm text-gray-600">{person.email}</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{person.name}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{person.email}</div>
                 </button>
               ))}
             </div>
@@ -269,30 +272,30 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer transition-colors ${
               filter === 'all' 
                 ? 'bg-blue-500 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-100'
+                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
             }`}
           >
             All
           </button>
           <button
             onClick={() => setFilter('lent')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer transition-colors ${
               filter === 'lent' 
                 ? 'bg-green-500 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-100'
+                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
             }`}
           >
             Lent
           </button>
           <button
             onClick={() => setFilter('borrowed')}
-            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer ${
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer transition-colors ${
               filter === 'borrowed' 
                 ? 'bg-red-500 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-100'
+                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
             }`}
           >
             Borrowed
@@ -303,7 +306,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
       {filteredTransactions.length > 0 ? (
         <>
           {/* Pagination info */}
-          <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
+          <div className="flex justify-between items-center mb-4 text-sm text-gray-600 dark:text-gray-400">
             <span>
               Showing {startItem}-{endItem} of {filteredTransactions.length} transactions
             </span>
@@ -314,7 +317,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
 
           <div className="space-y-3">
                         {paginatedTransactions.map((transaction) => (
-              <div key={transaction.id} className="bg-white p-3 sm:p-4 rounded border">
+              <div key={transaction.id} className="bg-white dark:bg-gray-700 p-3 sm:p-4 rounded border border-gray-200 dark:border-gray-600">
                 <div className="flex flex-col space-y-2">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
                     <div className="flex-1">
@@ -322,16 +325,16 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                         <span className={`inline-block w-2 h-2 rounded-full ${
                           transaction.type === 'lent' ? 'bg-green-500' : 'bg-red-500'
                         }`}></span>
-                        <span className="font-medium text-sm sm:text-base">
+                        <span className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100">
                           {transaction.type === 'lent' ? 'Lent to' : 'Borrowed from'} {transaction.other_person.name}
                         </span>
                       </div>
-                      <p className="text-gray-600 text-xs sm:text-sm mb-1">{transaction.description}</p>
-                      <p className="text-xs text-gray-500">{formatDate(transaction.created_at)}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1">{transaction.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(transaction.created_at)}</p>
                     </div>
                     <div className="text-left sm:text-right">
                       <p className={`font-bold text-lg sm:text-base ${
-                        transaction.type === 'lent' ? 'text-green-600' : 'text-red-600'
+                        transaction.type === 'lent' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {transaction.type === 'lent' ? '+' : '-'}{transaction.amount.toFixed(2)} ETB
                       </p>
@@ -340,10 +343,10 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                   
                   {/* Edit/Delete buttons - only show if user can edit */}
                   {transaction.can_edit && (
-                    <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                    <div className="flex space-x-2 pt-2 border-t border-gray-100 dark:border-gray-600">
                       <button
                         onClick={() => handleEdit(transaction)}
-                        className="p-2 text-blue-500 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                         title="Edit transaction"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -352,7 +355,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                       </button>
                       <button
                         onClick={() => handleDelete(transaction)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer"
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded focus:outline-none focus:ring-2 focus:ring-red-500 cursor-pointer"
                         title="Delete transaction"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,7 +375,10 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
               <button
                 onClick={goToPrevious}
                 disabled={currentPage === 1}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 cursor-pointer"
+                className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm 
+                           disabled:opacity-50 disabled:cursor-not-allowed 
+                           hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer
+                           text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
               >
                 Previous
               </button>
@@ -387,7 +393,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                   if (!showPage) {
                     // Show ellipsis for gaps
                     if (page === currentPage - 2 || page === currentPage + 2) {
-                      return <span key={page} className="px-2 text-gray-400">...</span>
+                      return <span key={page} className="px-2 text-gray-400 dark:text-gray-500">...</span>
                     }
                     return null
                   }
@@ -396,10 +402,10 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`px-3 py-1 rounded text-sm cursor-pointer ${
+                      className={`px-3 py-1 rounded text-sm cursor-pointer transition-colors ${
                         currentPage === page
                           ? 'bg-blue-500 text-white'
-                          : 'border hover:bg-gray-100'
+                          : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700'
                       }`}
                     >
                       {page}
@@ -411,7 +417,10 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
               <button
                 onClick={goToNext}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 cursor-pointer"
+                className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm 
+                           disabled:opacity-50 disabled:cursor-not-allowed 
+                           hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer
+                           text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
               >
                 Next
               </button>
@@ -419,7 +428,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
           )}
         </>
       ) : (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
           {selectedPerson 
             ? `No transactions found with ${selectedPerson.name}.`
             : filter === 'all' 

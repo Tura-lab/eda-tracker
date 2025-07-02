@@ -136,13 +136,13 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg sm:text-xl font-bold">Add Transaction</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">Add Transaction</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl cursor-pointer"
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl sm:text-2xl cursor-pointer"
           >
             ×
           </button>
@@ -151,7 +151,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Amount (ETB)
             </label>
             <input
@@ -160,7 +160,10 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
               min="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                         placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="0.00"
               required
             />
@@ -168,8 +171,8 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
 
           {/* Person Search */}
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Who did you lend money to?
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Who did you lend/pay money to?
             </label>
             <div className="relative">
               <input
@@ -181,7 +184,10 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                     setSelectedUser(null)
                   }
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                           placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Search by name or email..."
                 required
               />
@@ -189,7 +195,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                 <button
                   type="button"
                   onClick={clearUserSelection}
-                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-pointer"
                 >
                   ×
                 </button>
@@ -198,38 +204,41 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
 
             {/* Search Results */}
             {searchResults.length > 0 && !selectedUser && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((user) => (
                   <button
                     key={user.id}
                     type="button"
                     onClick={() => selectUser(user)}
-                    className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none cursor-pointer"
                   >
-                    <div className="font-medium text-black">{user.name}</div>
-                    <div className="text-sm text-gray-600">{user.email}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{user.name}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{user.email}</div>
                   </button>
                 ))}
               </div>
             )}
 
             {isSearching && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3">
-                <div className="text-gray-600">Searching...</div>
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg p-3">
+                <div className="text-gray-600 dark:text-gray-400">Searching...</div>
               </div>
             )}
           </div>
 
           {/* Reason */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Reason
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                         placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="e.g., Dinner, Gas money, Concert tickets..."
               required
             />
@@ -240,14 +249,18 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || !selectedUser}
-              className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 cursor-pointer"
+              className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
+                         text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 
+                         disabled:bg-gray-400 dark:disabled:bg-gray-600 cursor-pointer transition-colors"
             >
               {isLoading ? "Adding..." : "Add Transaction"}
             </button>

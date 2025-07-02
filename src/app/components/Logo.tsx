@@ -43,8 +43,8 @@ export default function Logo({ size = 32, className = "" }: LogoProps) {
         />
       </svg>
       <div className="flex flex-col">
-        <span className="text-xl font-bold text-blue-600">እዳ</span>
-        <span className="text-xs text-gray-600 -mt-1">Tracker</span>
+        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">እዳ</span>
+        <span className="text-xs text-gray-600 dark:text-gray-400 -mt-1">Tracker</span>
       </div>
     </div>
   )
