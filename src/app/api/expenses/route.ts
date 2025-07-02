@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     return new Response("Unauthorized", { status: 401 })
   }
 
-  const { amount, type, otherUserId, description } = await req.json()
+  const { amount, type, otherUserId, description, isPayment = false } = await req.json()
 
   if (!amount || !type || !otherUserId || !description) {
     return new Response("Missing required fields", { status: 400 })
@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     description,
     payer_id: type === 'lend' ? session.user.id : otherUserId,
     recipient_id: type === 'lend' ? otherUserId : session.user.id,
+    is_payment: Boolean(isPayment),
   }
 
   const { data, error } = await supabase
