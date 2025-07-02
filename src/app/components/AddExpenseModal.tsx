@@ -194,7 +194,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
           {/* Person Search */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Who did you lend money to?
+              Who did you lend/pay money to?
             </label>
             <div className="relative">
               <input
