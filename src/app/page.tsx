@@ -28,6 +28,8 @@ export default function Home() {
   const [initialLoading, setInitialLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [activeTab, setActiveTab] = useState<'owes-me' | 'i-owe'>('owes-me')
 
   // Function to refresh both balances and transactions
   const refreshData = () => {
@@ -73,6 +75,19 @@ export default function Home() {
     refreshData() // Refresh both balances and transactions after adding a new transaction
   }
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      // Refresh both balances and transactions
+      await fetchBalances()
+      setRefreshTrigger(prev => prev + 1)
+    } catch (error) {
+      console.error("Manual refresh error:", error)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
   if (status === "loading") {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
@@ -93,7 +108,7 @@ export default function Home() {
                 <Logo size={40} />
               </div>
               
-              {/* Right side - Add Transaction (desktop), Theme toggle and Profile */}
+              {/* Right side - Add Transaction (desktop), Refresh, Theme toggle and Profile */}
               <div className="flex items-center space-x-3">
                 {/* Add Transaction Button - Desktop only */}
                 <button
@@ -106,6 +121,32 @@ export default function Home() {
                   </svg>
                   Add Transaction
                 </button>
+                
+                {/* Refresh Button - Desktop only */}
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className="hidden sm:flex p-2 rounded-full cursor-pointer transition-colors
+                             bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 
+                             hover:bg-gray-200 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500
+                             disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Refresh all data"
+                >
+                  <svg 
+                    className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                    />
+                  </svg>
+                </button>
+                
                 <ThemeToggle />
                 <ProfileDropdown />
               </div>
@@ -116,16 +157,43 @@ export default function Home() {
         {/* Mobile Add Transaction Button - Shows below header on mobile only */}
         <div className="block sm:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 py-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full flex items-center justify-center px-4 py-3 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
-                         text-white rounded-md text-sm font-medium cursor-pointer transition-colors"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Transaction
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex-1 flex items-center justify-center px-4 py-3 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
+                           text-white rounded-md text-sm font-medium cursor-pointer transition-colors"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add Transaction
+              </button>
+              
+              {/* Refresh Button - Mobile */}
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="p-3 rounded-md cursor-pointer transition-colors
+                           bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 
+                           hover:bg-gray-200 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh all data"
+              >
+                <svg 
+                  className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -139,7 +207,8 @@ export default function Home() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            {/* Desktop Layout - Grid */}
+            <div className="hidden sm:grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
               {/* People who owe me money */}
               <div className="bg-green-50 dark:bg-green-900/20 p-4 sm:p-6 rounded-lg border border-green-200 dark:border-green-800">
                 <h2 className="text-lg sm:text-xl font-semibold text-green-800 dark:text-green-400 mb-4">
@@ -189,6 +258,90 @@ export default function Home() {
                   </div>
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">You don&apos;t owe anyone money right now.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Layout - Tabs */}
+            <div className="block sm:hidden">
+              {/* Tab Navigation */}
+              <div className="flex bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-1 mb-4">
+                <button
+                  onClick={() => setActiveTab('owes-me')}
+                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'owes-me'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  Owes Me ({balances?.whoOwesMe?.length || 0})
+                </button>
+                <button
+                  onClick={() => setActiveTab('i-owe')}
+                  className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === 'i-owe'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  I Owe ({balances?.whoIOwe?.length || 0})
+                </button>
+              </div>
+
+              {/* Tab Content */}
+              <div className="min-h-[200px]">
+                {activeTab === 'owes-me' && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <h2 className="text-lg font-semibold text-green-800 dark:text-green-400 mb-4">
+                      People who owe me money
+                    </h2>
+                    {balances?.whoOwesMe?.length ? (
+                      <div className="space-y-3">
+                        {balances.whoOwesMe.map((balance) => (
+                          <div key={balance.other_user_id} className="flex flex-col p-3 
+                                                                      bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 
+                                                                      space-y-2">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{balance.other_user_name}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 break-all">{balance.other_user_email}</p>
+                            </div>
+                            <p className="text-green-600 dark:text-green-400 font-bold text-lg self-start">
+                              +{Math.abs(balance.net_balance).toFixed(2)} ETB
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No one owes you money right now.</p>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'i-owe' && (
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                    <h2 className="text-lg font-semibold text-red-800 dark:text-red-400 mb-4">
+                      People I owe money to
+                    </h2>
+                    {balances?.whoIOwe?.length ? (
+                      <div className="space-y-3">
+                        {balances.whoIOwe.map((balance) => (
+                          <div key={balance.other_user_id} className="flex flex-col p-3 
+                                                                      bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 
+                                                                      space-y-2">
+                            <div className="flex-1">
+                              <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{balance.other_user_name}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 break-all">{balance.other_user_email}</p>
+                            </div>
+                            <p className="text-red-600 dark:text-red-400 font-bold text-lg self-start">
+                              -{Math.abs(balance.net_balance).toFixed(2)} ETB
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">You don&apos;t owe anyone money right now.</p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
