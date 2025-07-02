@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./components/Providers";
@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   description: "Keep track of money you've lent to friends and family. Simple, secure, and easy-to-use expense tracking for personal lending in Ethiopian Birr (ETB).",
   keywords: ["expense tracker", "lending", "borrowing", "money tracker", "ETB", "Ethiopian Birr", "personal finance", "እዳ"],
   authors: [{ name: "እዳ Tracker" }],
-  viewport: "width=device-width, initial-scale=1",
   icons: {
     icon: "/logo.svg",
     shortcut: "/logo.svg",
@@ -35,6 +34,13 @@ export const metadata: Metadata = {
     title: "እዳ Tracker - Track Your Lending & Borrowing",
     description: "Keep track of money you've lent to friends and family. Simple, secure, and easy-to-use expense tracking for personal lending in Ethiopian Birr (ETB).",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
