@@ -10,6 +10,7 @@ interface Transaction {
   created_at: string
   type: 'lent' | 'borrowed'
   is_payment: boolean
+  receipt_url?: string
   other_person: {
     name: string
     email: string
@@ -26,6 +27,7 @@ interface EditTransactionModalProps {
 export default function EditTransactionModal({ isOpen, transaction, onClose, onSuccess }: EditTransactionModalProps) {
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
+  const [receiptUrl, setReceiptUrl] = useState("")
   const [isPayment, setIsPayment] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
@@ -39,6 +41,7 @@ export default function EditTransactionModal({ isOpen, transaction, onClose, onS
     if (transaction) {
       setAmount(transaction.amount.toString())
       setDescription(transaction.description)
+      setReceiptUrl(transaction.receipt_url || "")
       setIsPayment(transaction.is_payment || false)
     }
   }, [transaction])
@@ -67,6 +70,7 @@ export default function EditTransactionModal({ isOpen, transaction, onClose, onS
         body: JSON.stringify({
           amount: parseFloat(amount),
           description,
+          receiptUrl: receiptUrl.trim() || undefined,
           isPayment,
         }),
       })
@@ -164,6 +168,23 @@ export default function EditTransactionModal({ isOpen, transaction, onClose, onS
                          placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="e.g., Dinner, Gas money, Concert tickets..."
               required
+            />
+          </div>
+
+          {/* Receipt URL */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Receipt URL (optional)
+            </label>
+            <input
+              type="text"
+              value={receiptUrl}
+              onChange={(e) => setReceiptUrl(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                         placeholder-gray-500 dark:placeholder-gray-400"
+              placeholder="https://example.com/receipt.pdf or any text reference..."
             />
           </div>
 

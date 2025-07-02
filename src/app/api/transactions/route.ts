@@ -18,7 +18,7 @@ export async function GET() {
   // Get all transactions where user is involved
   const { data, error } = await supabase
     .from("expenses")
-    .select("id, amount, description, created_at, payer_id, recipient_id, is_payment")
+    .select("id, amount, description, created_at, payer_id, recipient_id, receipt_url, is_payment")
     .or(`payer_id.eq.${session.user.id},recipient_id.eq.${session.user.id}`)
     .order("created_at", { ascending: false })
 
@@ -71,6 +71,7 @@ export async function GET() {
       description: transaction.description,
       created_at: transaction.created_at,
       type: isLending ? 'lent' : 'borrowed',
+      receipt_url: transaction.receipt_url,
       is_payment: transaction.is_payment || false,
       can_edit: transaction.payer_id === session.user.id, // Only payer can edit
       other_person: {

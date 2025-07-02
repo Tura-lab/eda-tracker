@@ -8,6 +8,7 @@ interface TransactionData {
   type: 'lend' | 'borrow'
   otherUserId: string
   description: string
+  receiptUrl?: string
   isPayment: boolean
 }
 
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
     description: transaction.description,
     payer_id: transaction.type === 'lend' ? session.user.id : transaction.otherUserId,
     recipient_id: transaction.type === 'lend' ? transaction.otherUserId : session.user.id,
+    receipt_url: transaction.receiptUrl || null,
     is_payment: Boolean(transaction.isPayment),
   }))
 

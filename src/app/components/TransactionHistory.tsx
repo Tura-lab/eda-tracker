@@ -13,6 +13,7 @@ interface Transaction {
   type: 'lent' | 'borrowed'
   is_payment: boolean
   can_edit: boolean
+  receipt_url?: string
   other_person: {
     name: string
     email: string
@@ -28,7 +29,7 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
   const [paginatedTransactions, setPaginatedTransactions] = useState<Transaction[]>([])
-  const [filter, setFilter] = useState<'all' | 'lent' | 'borrowed'>('all')
+  const [filter, setFilter] = useState<'all' | 'lent' | 'borrowed' | 'payment'>('all')
   const [nameFilter, setNameFilter] = useState('')
   const [selectedPerson, setSelectedPerson] = useState<{name: string, email: string} | null>(null)
   const [availablePeople, setAvailablePeople] = useState<{name: string, email: string}[]>([])
@@ -72,8 +73,10 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
     let filtered = transactions
 
     // Apply type filter
-    if (filter !== 'all') {
-      filtered = filtered.filter(t => t.type === filter)
+    if (filter === 'payment') {
+      filtered = filtered.filter(t => t.is_payment)
+    } else if (filter !== 'all') {
+      filtered = filtered.filter(t => t.type === filter && !t.is_payment)
     }
 
     // Apply person filter
@@ -392,6 +395,16 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
           >
             Borrowed
           </button>
+          <button
+            onClick={() => setFilter('payment')}
+            className={`px-3 py-1 rounded text-xs sm:text-sm cursor-pointer transition-colors ${
+              filter === 'payment' 
+                ? 'bg-purple-500 text-white' 
+                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            Payments
+          </button>
         </div>
       </div>
 
@@ -482,6 +495,19 @@ export default function TransactionHistory({ refreshTrigger, onTransactionChange
                                 ? `Paid ${transaction.type === 'lent' ? 'to' : 'by'} ${transaction.other_person.name}`
                                 : `${transaction.type === 'lent' ? 'Lent to' : 'Borrowed from'} ${transaction.other_person.name}`
                               }
+                              {transaction.receipt_url && (
+                                <span className="ml-2">
+                                  <a 
+                                    href={transaction.receipt_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer text-xs"
+                                    title="View receipt"
+                                  >
+                                    📄 Receipt
+                                  </a>
+                                </span>
+                              )}
                             </span>
                           </div>
                           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1">{transaction.description}</p>

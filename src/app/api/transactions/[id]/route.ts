@@ -11,7 +11,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     return new Response("Unauthorized", { status: 401 })
   }
 
-  const { amount, description, isPayment = false } = await req.json()
+  const { amount, description, receiptUrl, isPayment = false } = await req.json()
 
   if (!amount || !description) {
     return new Response("Missing required fields", { status: 400 })
@@ -47,6 +47,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     .update({
       amount: parseFloat(amount),
       description,
+      receipt_url: receiptUrl || null,
       is_payment: Boolean(isPayment),
       updated_at: new Date().toISOString()
     })
