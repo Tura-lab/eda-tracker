@@ -24,6 +24,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
   const [description, setDescription] = useState("")
   const [receiptUrl, setReceiptUrl] = useState("")
   const [isPayment, setIsPayment] = useState(false)
+  const [isSplit, setIsSplit] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
@@ -87,12 +88,35 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
     setIsLoading(true)
 
     try {
-      // Create transactions for each selected user with the same amount
+      let transactionAmount: number
+      
+      if (isSplit) {
+        // Split the amount among all selected people plus the current user
+        const totalPeople = selectedUsers.length + 1 // +1 for current user
+        transactionAmount = parseFloat(amount) / totalPeople
+        
+        // Validate that the split amount is reasonable
+        if (transactionAmount < 0.01) {
+          setToast({
+            isOpen: true,
+            type: 'error',
+            title: "Amount Too Small",
+            message: "The split amount per person would be less than 0.01 ETB. Please increase the total amount or reduce the number of people."
+          })
+          setIsLoading(false)
+          return
+        }
+      } else {
+        // Each person owes the full amount
+        transactionAmount = parseFloat(amount)
+      }
+
+      // Create transactions for each selected user
       const transactions = selectedUsers.map(user => ({
-        amount: parseFloat(amount),
+        amount: Math.round(transactionAmount * 100) / 100, // Round to 2 decimal places
         type,
         otherUserId: user.id,
-        description,
+        description: isSplit ? `${description} (Split: ${(Math.round(transactionAmount * 100) / 100).toFixed(2)} ETB each)` : description,
         receiptUrl: receiptUrl.trim() || undefined,
         isPayment,
       }))
@@ -113,11 +137,14 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         setDescription("")
         setReceiptUrl("")
         setIsPayment(false)
+        setIsSplit(false)
         setToast({
           isOpen: true,
           type: 'success',
           title: "Success!",
-          message: `${transactions.length} transaction(s) added successfully.`
+          message: isSplit 
+            ? `${transactions.length} transaction(s) added successfully. Amount split among ${selectedUsers.length + 1} people.`
+            : `${transactions.length} transaction(s) added successfully.`
         })
         onSuccess()
         // Small delay to let user see the success toast
@@ -257,10 +284,15 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                 ))}
               </div>
               
-              {selectedUsers.length > 1 && amount && (
+              {selectedUsers.length > 0 && amount && (
                 <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
                   <span className="font-medium text-blue-800 dark:text-blue-300">
-                    Each person will owe: {parseFloat(amount || "0").toFixed(2)} ETB
+                    {isSplit 
+                      ? `Each person will owe: ${(Math.round((parseFloat(amount || "0") / (selectedUsers.length + 1)) * 100) / 100).toFixed(2)} ETB (split among ${selectedUsers.length + 1} people)`
+                      : selectedUsers.length > 1 
+                        ? `Each person will owe: ${parseFloat(amount || "0").toFixed(2)} ETB`
+                        : `This person will owe: ${parseFloat(amount || "0").toFixed(2)} ETB`
+                    }
                   </span>
                 </div>
               )}
@@ -321,6 +353,28 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
               </div>
             </label>
           </div>
+
+          {/* Split Checkbox */}
+          {selectedUsers.length > 0 && (
+            <div>
+              <label className="flex items-center space-x-3 p-3 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
+                <input
+                  type="checkbox"
+                  checked={isSplit}
+                  onChange={(e) => setIsSplit(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+                />
+                <div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Split the amount among all selected people plus me
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    This will divide the total amount among all selected people and the current user.
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="flex space-x-3 pt-4">
