@@ -31,7 +31,6 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
   const [isLoading, setIsLoading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [commonUsers, setCommonUsers] = useState<User[]>([])
-  const [showCommonUsers, setShowCommonUsers] = useState(false)
   const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
     isOpen: false,
     type: 'error',
@@ -189,7 +188,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         setReceiptUrl("")
         setIsPayment(false)
         setIsSplit(false)
-        setShowCommonUsers(false)
+
         setToast({
           isOpen: true,
           type: 'success',
@@ -228,7 +227,6 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
     setSelectedUsers(prev => [...prev, user])
     setSearchQuery("")
     setSearchResults([])
-    setShowCommonUsers(false)
   }
 
   const removeUser = (userId: string) => {
@@ -292,43 +290,34 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             {/* Common Users Section */}
             {commonUsers.length > 0 && (
               <div className="mb-3">
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     Recent People
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowCommonUsers(!showCommonUsers)}
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer"
-                  >
-                    {showCommonUsers ? "Hide" : "Show"}
-                  </button>
                 </div>
                 
-                {showCommonUsers && (
-                  <div className="grid grid-cols-1 gap-2 mb-3">
-                    {commonUsers.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
-                        <button
-                          type="button"
-                          onClick={() => selectCommonUser(user)}
-                          className="flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-2 py-1 cursor-pointer"
-                        >
-                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeCommonUser(user.id)}
-                          className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer text-sm"
-                          title="Remove from recent list"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="grid grid-cols-1 gap-2 mb-3">
+                  {commonUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                      <button
+                        type="button"
+                        onClick={() => selectCommonUser(user)}
+                        className="flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-2 py-1 cursor-pointer"
+                      >
+                        <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeCommonUser(user.id)}
+                        className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer text-sm"
+                        title="Remove from recent list"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
