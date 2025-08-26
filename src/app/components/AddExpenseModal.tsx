@@ -15,6 +15,9 @@ interface AddExpenseModalProps {
   onSuccess: () => void
 }
 
+// Local storage key for common users
+const COMMON_USERS_KEY = "splitwise_common_users"
+
 export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalProps) {
   const [amount, setAmount] = useState("")
   const [type] = useState<"lend" | "borrow">("lend") // Always lending since borrowers don't add transactions
@@ -27,12 +30,57 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
   const [isSplit, setIsSplit] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [commonUsers, setCommonUsers] = useState<User[]>([])
+  const [showCommonUsers, setShowCommonUsers] = useState(false)
   const [toast, setToast] = useState<{isOpen: boolean, type: 'success' | 'error', title: string, message: string}>({
     isOpen: false,
     type: 'error',
     title: "",
     message: ""
   })
+
+  // Load common users from localStorage on component mount
+  useEffect(() => {
+    if (isOpen) {
+      loadCommonUsers()
+    }
+  }, [isOpen])
+
+  // Load common users from localStorage
+  const loadCommonUsers = () => {
+    try {
+      const stored = localStorage.getItem(COMMON_USERS_KEY)
+      if (stored) {
+        const users = JSON.parse(stored)
+        setCommonUsers(users)
+      }
+    } catch (error) {
+      console.error("Error loading common users:", error)
+    }
+  }
+
+  // Save common users to localStorage
+  const saveCommonUsers = (users: User[]) => {
+    try {
+      localStorage.setItem(COMMON_USERS_KEY, JSON.stringify(users))
+    } catch (error) {
+      console.error("Error saving common users:", error)
+    }
+  }
+
+  // Add user to common users list
+  const addToCommonUsers = (user: User) => {
+    setCommonUsers(prev => {
+      // Check if user already exists
+      const exists = prev.some(u => u.id === user.id)
+      if (!exists) {
+        const newList = [user, ...prev].slice(0, 10) // Keep only top 10 most recent
+        saveCommonUsers(newList)
+        return newList
+      }
+      return prev
+    })
+  }
 
   // Search for users
   useEffect(() => {
@@ -111,6 +159,9 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         transactionAmount = parseFloat(amount)
       }
 
+      // Add selected users to common users list
+      selectedUsers.forEach(user => addToCommonUsers(user))
+
       // Create transactions for each selected user
       const transactions = selectedUsers.map(user => ({
         amount: Math.round(transactionAmount * 100) / 100, // Round to 2 decimal places
@@ -138,6 +189,7 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         setReceiptUrl("")
         setIsPayment(false)
         setIsSplit(false)
+        setShowCommonUsers(false)
         setToast({
           isOpen: true,
           type: 'success',
@@ -176,10 +228,23 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
     setSelectedUsers(prev => [...prev, user])
     setSearchQuery("")
     setSearchResults([])
+    setShowCommonUsers(false)
   }
 
   const removeUser = (userId: string) => {
     setSelectedUsers(prev => prev.filter(user => user.id !== userId))
+  }
+
+  const selectCommonUser = (user: User) => {
+    addUser(user)
+  }
+
+  const removeCommonUser = (userId: string) => {
+    setCommonUsers(prev => {
+      const newList = prev.filter(user => user.id !== userId)
+      saveCommonUsers(newList)
+      return newList
+    })
   }
 
   if (!isOpen) return null
@@ -218,11 +283,56 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
             />
           </div>
 
-          {/* Person Search */}
+          {/* Person Selection */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Who did you lend/pay money to?
             </label>
+            
+            {/* Common Users Section */}
+            {commonUsers.length > 0 && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Recent People
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowCommonUsers(!showCommonUsers)}
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer"
+                  >
+                    {showCommonUsers ? "Hide" : "Show"}
+                  </button>
+                </div>
+                
+                {showCommonUsers && (
+                  <div className="grid grid-cols-1 gap-2 mb-3">
+                    {commonUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <button
+                          type="button"
+                          onClick={() => selectCommonUser(user)}
+                          className="flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-2 py-1 cursor-pointer"
+                        >
+                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeCommonUser(user.id)}
+                          className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer text-sm"
+                          title="Remove from recent list"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Search Input */}
             <div className="relative">
               <input
                 type="text"
