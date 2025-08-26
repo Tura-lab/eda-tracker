@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import Toast from "./Toast"
 
 interface User {
@@ -18,7 +19,13 @@ interface AddExpenseModalProps {
 // Local storage key for common users
 const COMMON_USERS_KEY = "splitwise_common_users"
 
+// Helper function to get first name from full name
+const getFirstName = (fullName: string): string => {
+  return fullName.split(' ')[0] || fullName
+}
+
 export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalProps) {
+  const { data: session } = useSession()
   const [amount, setAmount] = useState("")
   const [type] = useState<"lend" | "borrow">("lend") // Always lending since borrowers don't add transactions
   const [searchQuery, setSearchQuery] = useState("")
@@ -166,7 +173,9 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
         amount: Math.round(transactionAmount * 100) / 100, // Round to 2 decimal places
         type,
         otherUserId: user.id,
-        description: isSplit ? `${description} (Split: ${(Math.round(transactionAmount * 100) / 100).toFixed(2)} ETB each)` : description,
+        description: isSplit 
+          ? `${description} (Total: ${parseFloat(amount).toFixed(2)} ETB split among ${getFirstName(session?.user?.name || 'You')}, ${selectedUsers.map(u => getFirstName(u.name)).join(', ')})`
+          : description,
         receiptUrl: receiptUrl.trim() || undefined,
         isPayment,
       }))
