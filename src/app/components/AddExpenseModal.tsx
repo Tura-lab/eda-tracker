@@ -233,7 +233,14 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
   }
 
   const addUser = (user: User) => {
-    setSelectedUsers(prev => [...prev, user])
+    setSelectedUsers(prev => {
+      // Check if user is already selected
+      const isAlreadySelected = prev.some(selectedUser => selectedUser.id === user.id)
+      if (isAlreadySelected) {
+        return prev // Don't add if already selected
+      }
+      return [...prev, user]
+    })
     setSearchQuery("")
     setSearchResults([])
   }
@@ -306,26 +313,41 @@ export default function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpen
                 </div>
                 
                 <div className="grid grid-cols-1 gap-2 mb-3">
-                  {commonUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md">
-                      <button
-                        type="button"
-                        onClick={() => selectCommonUser(user)}
-                        className="flex-1 text-left hover:bg-gray-100 dark:hover:bg-gray-600 rounded px-2 py-1 cursor-pointer"
-                      >
-                        <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeCommonUser(user.id)}
-                        className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer text-sm"
-                        title="Remove from recent list"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                  {commonUsers.map((user) => {
+                    const isSelected = selectedUsers.some(selectedUser => selectedUser.id === user.id)
+                    return (
+                      <div key={user.id} className={`flex items-center justify-between p-2 rounded-md ${
+                        isSelected 
+                          ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                          : 'bg-gray-50 dark:bg-gray-700'
+                      }`}>
+                        <button
+                          type="button"
+                          onClick={() => selectCommonUser(user)}
+                          disabled={isSelected}
+                          className={`flex-1 text-left rounded px-2 py-1 ${
+                            isSelected 
+                              ? 'cursor-not-allowed opacity-60' 
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer'
+                          }`}
+                        >
+                          <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
+                          {isSelected && (
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">✓ Already selected</div>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeCommonUser(user.id)}
+                          className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 cursor-pointer text-sm"
+                          title="Remove from recent list"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
