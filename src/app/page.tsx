@@ -103,9 +103,23 @@ export default function Home() {
         <nav className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              {/* Logo */}
-              <div className="flex-shrink-0">
+              {/* Logo and Navigation */}
+              <div className="flex items-center space-x-8">
                 <Logo size={40} />
+                <div className="hidden md:flex space-x-6">
+                  <button
+                    onClick={() => router.push('/')}
+                    className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => router.push('/analysis')}
+                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Analysis
+                  </button>
+                </div>
               </div>
               
               {/* Right side - Add Transaction (desktop), Refresh, Theme toggle and Profile */}
@@ -154,9 +168,25 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* Mobile Add Transaction Button - Shows below header on mobile only */}
+        {/* Mobile Navigation and Add Transaction Button - Shows below header on mobile only */}
         <div className="block sm:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 py-3">
+            {/* Mobile Navigation */}
+            <div className="flex items-center space-x-2 mb-3">
+              <button
+                onClick={() => router.push('/')}
+                className="flex-1 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => router.push('/analysis')}
+                className="flex-1 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-md text-sm font-medium transition-colors"
+              >
+                Analysis
+              </button>
+            </div>
+            
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setIsModalOpen(true)}
